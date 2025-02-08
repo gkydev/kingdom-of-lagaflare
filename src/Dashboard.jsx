@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Box, Typography, Button, Grid, CircularProgress, Card, CardContent } from '@mui/material';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ethers } from 'ethers';
+import { Interface } from '@ethersproject/abi';
 
 const Dashboard = ({ userAddress, provider, logoImage, contractAddress, contractABI }) => {
   const [contract, setContract] = useState(null);
@@ -52,29 +53,50 @@ const Dashboard = ({ userAddress, provider, logoImage, contractAddress, contract
     try {
       setIsMinting(true);
       const mintPrice = await contract.mintPrice();
-      console.log("Minting with price:", mintPrice.toString());
+      console.log("Mint price (wei):", mintPrice.toString());
       
-      const tx = await contract.mintNFT({ value: mintPrice });
-      console.log("Minting transaction:", tx.hash);
-      
-      await tx.wait();
-      console.log("Transaction confirmed");
-      
-      // Get the latest token ID
-      const newTokenId = (await contract._tokenIdCounter()) - 1;
-      console.log("New token ID:", newTokenId);
-      
-      // Get the NFT attributes
-      const newNFT = await contract.getNFTAttributes(newTokenId);
-      setNewCard({ 
-        rarity: newNFT[0],
-        name: newNFT[1],
-        attackDamage: newNFT[2],
-        tokenId: newTokenId 
+      // Send transaction
+      const tx = await contract.mintNFT({ 
+        value: mintPrice,
+        gasLimit: 500000
       });
-      
-      setShowNewCard(true);
-      await loadNFTs(contract);
+      console.log("Transaction hash:", tx.hash);
+
+      // Simple polling for transaction receipt
+      let receipt = null;
+      while (!receipt) {
+        receipt = await provider.getTransactionReceipt(tx.hash);
+        if (!receipt) {
+          await new Promise(resolve => setTimeout(resolve, 1000)); // Wait 1 second before retry
+        }
+      }
+
+      console.log("Transaction receipt:", receipt);
+
+      // Find the event from transaction logs
+      const event = receipt.logs.find(log => {
+        try {
+          const parsed = contract.interface.parseLog(log);
+          return parsed.name === 'NFTMinted';
+        } catch {
+          return false;
+        }
+      });
+
+      if (event) {
+        const parsed = contract.interface.parseLog(event);
+        console.log("NFTMinted event:", parsed);
+
+        setNewCard({
+          tokenId: Number(parsed.args[1]),
+          rarity: Number(parsed.args[2]),
+          name: parsed.args[3],
+          attackDamage: Number(parsed.args[4])
+        });
+        
+        setShowNewCard(true);
+        await loadNFTs(contract);
+      }
       
     } catch (error) {
       console.error("Error minting NFT:", error);
@@ -104,7 +126,7 @@ const Dashboard = ({ userAddress, provider, logoImage, contractAddress, contract
           left: '50%',
           transform: 'translateX(-50%)'
         }}>
-          <img src={logoImage} alt="Logo" style={{ height: '50px' }} />
+          <img src={logoImage} alt="Logo" style={{ height: '100px', paddingTop:"50px"}} />
         </Box>
         <Typography variant="body1" sx={{ 
           color: '#fff',
@@ -123,6 +145,7 @@ const Dashboard = ({ userAddress, provider, logoImage, contractAddress, contract
             backgroundColor: '#000', 
             borderRadius: 0,
             mb: 4,
+            mt: 2,
             width: "200px",
             height: "50px"
           }}
