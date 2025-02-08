@@ -3,6 +3,11 @@ import { Box, Typography, Button, Grid, CircularProgress, Card, CardContent } fr
 import { motion, AnimatePresence } from 'framer-motion';
 import { ethers } from 'ethers';
 import { Interface } from '@ethersproject/abi';
+import Dragonblade from './assets/Cards/Dragonblade.png';
+import Frostguard from './assets/Cards/Frostguard.png';
+import Shadowstrike from './assets/Cards/Shadowstrike.png';
+import Soulreaver from './assets/Cards/Soulreaver.png';
+import Thunderclaw from './assets/Cards/Thunderclaw.png';
 
 const Dashboard = ({ userAddress, provider, logoImage, contractAddress, contractABI }) => {
   const [contract, setContract] = useState(null);
@@ -109,6 +114,22 @@ const Dashboard = ({ userAddress, provider, logoImage, contractAddress, contract
   const formatAddress = (address) => {
     return `Knight ${address.substring(0, 6)}...${address.substring(address.length - 4)}`;
   };
+  const getCardImage = (name) => {
+    switch(name) {
+      case 'Dragonblade':
+        return Dragonblade;
+      case 'Frostguard':
+        return Frostguard;
+      case 'Shadowstrike':
+        return Shadowstrike;
+      case 'Soulreaver':
+        return Soulreaver;
+      case 'Thunderclaw':
+        return Thunderclaw;
+      default:
+        return null;
+    }
+  };
 
   return (
     <Box>
@@ -157,7 +178,7 @@ const Dashboard = ({ userAddress, provider, logoImage, contractAddress, contract
               <CircularProgress size={24} sx={{ mr: 2 }} />
               Minting...
             </>
-          ) : 'Mint NFT'}
+          ) : 'Open New Pack'}
         </Button>
 
         <AnimatePresence>
@@ -173,8 +194,20 @@ const Dashboard = ({ userAddress, provider, logoImage, contractAddress, contract
                 margin: 'auto',
                 background: getRarityColor(newCard.rarity),
                 color: 'white',
+                overflow: 'hidden'
               }}>
                 <CardContent>
+                  {getCardImage(newCard.name) && (
+                    <img 
+                      src={getCardImage(newCard.name)} 
+                      alt={newCard.name}
+                      style={{ 
+                        width: '100%',
+                        height: 'auto',
+                        marginBottom: '1rem'
+                      }}
+                    />
+                  )}
                   <Typography variant="h5">{newCard.name}</Typography>
                   <Typography>Rarity: {Rarity[newCard.rarity]}</Typography>
                   <Typography>Attack: {(newCard.attackDamage / 100).toFixed(2)}</Typography>
@@ -190,9 +223,21 @@ const Dashboard = ({ userAddress, provider, logoImage, contractAddress, contract
             <Grid item xs={12} sm={6} md={4} key={index}>
               <Card sx={{
                 background: getRarityColor(nft.rarity),
-                color: 'white'
+                color: 'white',
+                overflow: 'hidden'
               }}>
                 <CardContent>
+                  {getCardImage(nft.name) && (
+                    <img 
+                      src={getCardImage(nft.name)} 
+                      alt={nft.name}
+                      style={{ 
+                        width: '100%',
+                        height: 'auto',
+                        marginBottom: '1rem'
+                      }}
+                    />
+                  )}
                   <Typography variant="h5">{nft.name}</Typography>
                   <Typography>Rarity: {Rarity[nft.rarity]}</Typography>
                   <Typography>Attack: {(nft.attackDamage / 100).toFixed(2)}</Typography>
