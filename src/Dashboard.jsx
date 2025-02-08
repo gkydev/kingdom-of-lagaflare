@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Typography, Button, Grid, CircularProgress, Card, CardContent } from '@mui/material';
+import { Box, Typography, Button, Grid, CircularProgress, Card, CardContent, Container } from '@mui/material';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ethers } from 'ethers';
 import { Interface } from '@ethersproject/abi';
@@ -132,8 +132,8 @@ const Dashboard = ({ userAddress, provider, logoImage, contractAddress, contract
   };
 
   return (
-    <Box>
-      <Box sx={{ 
+    <>
+    <Box sx={{ 
         width: '100%', 
         padding: '1rem', 
         display: 'flex', 
@@ -147,17 +147,21 @@ const Dashboard = ({ userAddress, provider, logoImage, contractAddress, contract
           left: '50%',
           transform: 'translateX(-50%)'
         }}>
-          <img src={logoImage} alt="Logo" style={{ height: '100px', paddingTop:"50px"}} />
+          <img src={logoImage} alt="Logo" style={{ height: '120px', paddingTop:"50px"}} />
         </Box>
         <Typography variant="body1" sx={{ 
           color: '#fff',
           flex: 1,
           textAlign: 'right',
-          fontFamily: 'monospace'
+          fontFamily: 'monospace',
+          left: "100px"
         }}>
           {formatAddress(userAddress)}
         </Typography>
       </Box>
+    <Container>
+    <Box>
+      
       
       <Box sx={{ padding: '2rem', textAlign: 'center' }}>
         <Button
@@ -220,11 +224,12 @@ const Dashboard = ({ userAddress, provider, logoImage, contractAddress, contract
 
         <Grid container spacing={3} justifyContent="center">
           {nfts.map((nft, index) => (
-            <Grid item xs={12} sm={6} md={4} key={index}>
+            <Grid item xs={12} sm={6} md={4} sx={4} key={index}>
               <Card sx={{
                 background: getRarityColor(nft.rarity),
                 color: 'white',
-                overflow: 'hidden'
+                overflow: 'hidden',
+                maxWidth: 300,
               }}>
                 <CardContent>
                   {getCardImage(nft.name) && (
@@ -249,6 +254,8 @@ const Dashboard = ({ userAddress, provider, logoImage, contractAddress, contract
         </Grid>
       </Box>
     </Box>
+    </Container>
+    </>
   );
 };
 
