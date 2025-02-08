@@ -59,10 +59,22 @@ const NFTCardGame = () => {
   return (
     <Box sx={{ 
       padding: 0,
-      backgroundImage: `url(${bgImage})`,
-      backgroundSize: 'cover',
-      backgroundPosition: 'center',
-      minHeight: '100vh'
+      minHeight: '100vh',
+      position: 'relative',
+      zIndex: 1,
+      '&::before': {
+        content: '""',
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        width: '100%',
+        height: '100%',
+        backgroundImage: `url(${bgImage})`,
+        backgroundPosition: 'center',
+        backgroundSize: 'cover',
+        backgroundRepeat: 'no-repeat',
+        zIndex: -1
+      }
     }}>
       <Routes>
         <Route path="/" element={!provider ? connectWalletContent : <Navigate to="/dashboard" replace />} />
