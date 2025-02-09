@@ -21,6 +21,9 @@ const Dashboard = ({ userAddress, provider, logoImage, contractAddress, contract
   const [showConfetti, setShowConfetti] = useState(false);
   const [selectedCard, setSelectedCard] = useState(null); // Track selected card
   const [error, setError] = useState(null); // For error messages
+  const [isFightModalOpen, setIsFightModalOpen] = useState(false);
+  const [fightMode, setFightMode] = useState(null); // 'create' or 'join'
+  const [fightId, setFightId] = useState('');
 
   const Rarity = ["Common", "Rare", "Epic", "Legendary"];
 
@@ -181,8 +184,28 @@ const Dashboard = ({ userAddress, provider, logoImage, contractAddress, contract
       setError('Please select a card before fighting!');
       return;
     }
-    // Add your fight logic here
-    console.log('Selected card for fight:', selectedCard);
+    setIsFightModalOpen(true);
+  };
+
+  const handleCreateFight = () => {
+    setFightMode('create');
+  };
+
+  const handleJoinFight = () => {
+    setFightMode('join');
+  };
+
+  const handleFightSubmit = () => {
+    if (fightMode === 'create') {
+      console.log('Creating fight with ID:', fightId);
+      // Add your create fight logic here
+    } else {
+      console.log('Joining fight with ID:', fightId);
+      // Add your join fight logic here
+    }
+    setIsFightModalOpen(false);
+    setFightMode(null);
+    setFightId('');
   };
 
   const handleCloseError = () => {
@@ -442,6 +465,112 @@ const Dashboard = ({ userAddress, provider, logoImage, contractAddress, contract
             >
               ADD TO MY DECK !
             </Button>
+          )}
+        </Box>
+      </Modal>
+
+      {/* Fight Modal */}
+      <Modal
+        open={isFightModalOpen}
+        onClose={() => {
+          setIsFightModalOpen(false);
+          setFightMode(null);
+          setFightId('');
+        }}
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+      >
+        <Box
+          sx={{
+            backgroundColor: 'rgba(0, 0, 0, 0.9)',
+            padding: '2rem',
+            borderRadius: '8px',
+            textAlign: 'center',
+            border: '2px solid #b45309',
+            maxWidth: '400px',
+            width: '90%',
+          }}
+        >
+          {!fightMode ? (
+            // Initial fight mode selection
+            <>
+              <Typography variant="h5" sx={{ color: '#fef3c7', mb: 3 }}>
+                Choose Your Battle Path
+              </Typography>
+              <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center' }}>
+                <Button
+                  onClick={handleCreateFight}
+                  sx={{
+                    backgroundColor: '#7c2d12',
+                    color: '#fef3c7',
+                    border: '2px solid #b45309',
+                    '&:hover': { backgroundColor: '#92400e' },
+                  }}
+                >
+                  Create Fight
+                </Button>
+                <Button
+                  onClick={handleJoinFight}
+                  sx={{
+                    backgroundColor: '#7c2d12',
+                    color: '#fef3c7',
+                    border: '2px solid #b45309',
+                    '&:hover': { backgroundColor: '#92400e' },
+                  }}
+                >
+                  Join Fight
+                </Button>
+              </Box>
+            </>
+          ) : (
+            // Fight ID input form
+            <>
+              <Typography variant="h5" sx={{ color: '#fef3c7', mb: 3 }}>
+                {fightMode === 'create' ? 'Create New Fight' : 'Join Existing Fight'}
+              </Typography>
+              <input
+                type="text"
+                value={fightId}
+                onChange={(e) => setFightId(e.target.value)}
+                placeholder={fightMode === 'create' ? 'Enter fight ID to create' : 'Enter fight ID to join'}
+                style={{
+                  width: '100%',
+                  padding: '10px',
+                  marginBottom: '20px',
+                  backgroundColor: '#1f2937',
+                  border: '2px solid #b45309',
+                  borderRadius: '4px',
+                  color: '#fef3c7',
+                }}
+              />
+              <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center' }}>
+                <Button
+                  onClick={handleFightSubmit}
+                  sx={{
+                    backgroundColor: '#7c2d12',
+                    color: '#fef3c7',
+                    border: '2px solid #b45309',
+                    '&:hover': { backgroundColor: '#92400e' },
+                  }}
+                >
+                  {fightMode === 'create' ? 'Create' : 'Join'}
+                </Button>
+                <Button
+                  onClick={() => setFightMode(null)}
+                  sx={{
+                    backgroundColor: '#1f2937',
+                    color: '#fef3c7',
+                    border: '2px solid #b45309',
+                    '&:hover': { backgroundColor: '#374151' },
+                  }}
+                >
+                  Back
+                </Button>
+              </Box>
+            </>
           )}
         </Box>
       </Modal>
