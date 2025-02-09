@@ -195,7 +195,7 @@ const Dashboard = ({ userAddress, provider, logoImage, contractAddress, contract
             zIndex: 1, // Add this
           }}
         >
-          <img src={logoImage} alt="Logo" style={{ height: '140px', paddingTop: '50px' }} />
+          <img src={logoImage} alt="Logo" style={{ height: '180px', paddingTop: '50px' }} />
         </Box>
         <Box sx={{ flex: 1 }} /> {/* Left spacer */}
         <Typography
@@ -252,8 +252,41 @@ const Dashboard = ({ userAddress, provider, logoImage, contractAddress, contract
                   OPENING NEW PACK...
                 </>
               ) : (
-                'Open New Pack'
+                'Open Pack'
               )}
+            </Button>
+            <Button
+              variant="contained"
+              sx={{
+                mt: 4,
+                mb: 2,
+                ml: 2,
+                backgroundColor: '#7c2d12', // bg-amber-900
+                color: '#fef3c7', // text-amber-100
+                fontFamily: 'serif', // font-serif
+                fontWeight: 'bold', // font-bold
+                fontSize: '1.125rem', // text-lg
+                border: '2px solid #b45309', // border-2 border-amber-700
+                borderRadius: '0.375rem', // rounded
+                boxShadow: 'inset 0 2px 4px 0 rgba(146, 64, 14, 0.5)', // shadow-inner shadow-amber-800/50
+                transition: 'all 0.3s', // transition-all duration-300
+                '&:hover': {
+                  backgroundColor: '#92400e', // hover:bg-amber-800
+                  color: '#fef9c3', // hover:text-amber-50
+                },
+                '&:active': {
+                  backgroundColor: '#431407', // active:bg-amber-950
+                },
+                letterSpacing: '0.025em', // tracking-wide
+                px: 3, // px-6 (1 unit = 8px, so 6 * 8 = 48px / 16px = 3)
+                py: 1.5, // py-2 (2 * 8 = 16px / 16px = 1)
+              }}
+              //onClick={mintNFT}
+              //disabled={isMinting}
+            >
+              
+                FIGHT !
+              
             </Button>
 
             <Grid container spacing={3} justifyContent="center">
@@ -393,7 +426,7 @@ const Dashboard = ({ userAddress, provider, logoImage, contractAddress, contract
             }}
             onClick={() => setIsModalOpen(false)}
           >
-            AMAZING !
+            ADD TO MY DECK !
           </Button>
           )}
         </Box>
