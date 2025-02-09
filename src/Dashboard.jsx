@@ -280,7 +280,7 @@ const Dashboard = ({ userAddress, provider, logoImage, contractAddress, contract
                         <Typography variant="h5">{nft.name}</Typography>
                         <Typography>Rarity: {Rarity[nft.rarity]}</Typography>
                         <Typography>Attack: {(nft.attackDamage / 100).toFixed(2)}</Typography>
-                        <Typography>Token ID: {nft.tokenId}</Typography>
+                        <Typography>Card ID: {nft.tokenId}</Typography>
                       </CardContent>
                     </Card>
                   </Grid>
