@@ -8,6 +8,27 @@ import nftContractABI from './abi.json';
 import logoImage from './assets/kindomoflegaflarenobg.png';
 import bgImage from './assets/bg.png';
 import Dashboard from './Dashboard.jsx';
+import { createTheme, ThemeProvider } from '@mui/material/styles';
+
+// Create theme with Cinzel font
+const theme = createTheme({
+  typography: {
+    fontFamily: 'Cinzel, serif',
+    allVariants: {
+      letterSpacing: '0.03em',
+    },
+  },
+  components: {
+    MuiButton: {
+      styleOverrides: {
+        root: {
+          fontFamily: 'Cinzel, serif',
+          fontWeight: 700,
+        },
+      },
+    },
+  },
+});
 
 const NFTCardGame = () => {
   const [provider, setProvider] = useState(null);
@@ -47,30 +68,25 @@ const NFTCardGame = () => {
       </Typography>
       <Button 
         variant="contained" 
-        color="primary" 
         onClick={handleConnectWallet}
         sx={{
           mt: 2,
-          backgroundColor: '#7c2d12', // bg-amber-900
-          color: '#fef3c7', // text-amber-100
-          fontFamily: 'serif', // font-serif
-          fontWeight: 'bold', // font-bold
-          fontSize: '1.125rem', // text-lg
-          border: '2px solid #b45309', // border-2 border-amber-700
-          borderRadius: '0.375rem', // rounded
-          boxShadow: 'inset 0 2px 4px 0 rgba(146, 64, 14, 0.5)', // shadow-inner shadow-amber-800/50
-          transition: 'all 0.3s', // transition-all duration-300
+          backgroundColor: '#7c2d12',
+          color: '#fef3c7',
+          fontSize: '1.125rem',
+          border: '2px solid #b45309',
+          borderRadius: '0.375rem',
+          boxShadow: 'inset 0 2px 4px 0 rgba(146, 64, 14, 0.5)',
+          transition: 'all 0.3s',
           '&:hover': {
-            backgroundColor: '#92400e', // hover:bg-amber-800
-            color: '#fef9c3', // hover:text-amber-50
+            backgroundColor: '#92400e',
+            color: '#fef9c3',
           },
           '&:active': {
-            backgroundColor: '#431407', // active:bg-amber-950
+            backgroundColor: '#431407',
           },
-          letterSpacing: '0.025em', // tracking-wide
-          px: 3, // px-6 (1 unit = 8px, so 6 * 8 = 48px / 16px = 3)
-          py: 1.5, // py-2 (2 * 8 = 16px / 16px = 1)
-          
+          px: 3,
+          py: 1.5,
         }}
       >
         Connect Wallet
@@ -79,39 +95,41 @@ const NFTCardGame = () => {
   );
 
   return (
-    <Box sx={{ 
-      padding: 0,
-      minHeight: '100vh',
-      position: 'relative',
-      zIndex: 1,
-      '&::before': {
-        content: '""',
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        width: '100%',
-        height: '100%',
-        backgroundImage: `url(${bgImage})`,
-        backgroundPosition: 'center',
-        backgroundSize: 'cover',
-        backgroundRepeat: 'no-repeat',
-        zIndex: -1
-      }
-    }}>
-      <Routes>
-        <Route path="/" element={!provider ? connectWalletContent : <Navigate to="/dashboard" replace />} />
-        <Route path="/dashboard" element={
-          !provider ? <Navigate to="/" replace /> : 
-          <Dashboard 
-            userAddress={userAddress} 
-            provider={provider}
-            logoImage={logoImage} 
-            contractAddress={"0x6Dd60539316747995a76DCa3def165E3d43408Dd"}
-            contractABI={nftContractABI}
-          />
-        } />
-      </Routes>
-    </Box>
+    <ThemeProvider theme={theme}>
+      <Box sx={{ 
+        padding: 0,
+        minHeight: '100vh',
+        position: 'relative',
+        zIndex: 1,
+        '&::before': {
+          content: '""',
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
+          backgroundImage: `url(${bgImage})`,
+          backgroundPosition: 'center',
+          backgroundSize: 'cover',
+          backgroundRepeat: 'no-repeat',
+          zIndex: -1
+        }
+      }}>
+        <Routes>
+          <Route path="/" element={!provider ? connectWalletContent : <Navigate to="/dashboard" replace />} />
+          <Route path="/dashboard" element={
+            !provider ? <Navigate to="/" replace /> : 
+            <Dashboard 
+              userAddress={userAddress} 
+              provider={provider}
+              logoImage={logoImage} 
+              contractAddress={"0x6Dd60539316747995a76DCa3def165E3d43408Dd"}
+              contractABI={nftContractABI}
+            />
+          } />
+        </Routes>
+      </Box>
+    </ThemeProvider>
   );
 };
 

@@ -216,12 +216,27 @@ const Dashboard = ({ userAddress, provider, logoImage, contractAddress, contract
             <Button
               variant="contained"
               sx={{
-                backgroundColor: '#000',
-                borderRadius: 0,
-                mb: 4,
-                mt: 3,
-                width: '200px',
-                height: '50px',
+                mt: 4,
+                mb: 2,
+                backgroundColor: '#7c2d12', // bg-amber-900
+                color: '#fef3c7', // text-amber-100
+                fontFamily: 'serif', // font-serif
+                fontWeight: 'bold', // font-bold
+                fontSize: '1.125rem', // text-lg
+                border: '2px solid #b45309', // border-2 border-amber-700
+                borderRadius: '0.375rem', // rounded
+                boxShadow: 'inset 0 2px 4px 0 rgba(146, 64, 14, 0.5)', // shadow-inner shadow-amber-800/50
+                transition: 'all 0.3s', // transition-all duration-300
+                '&:hover': {
+                  backgroundColor: '#92400e', // hover:bg-amber-800
+                  color: '#fef9c3', // hover:text-amber-50
+                },
+                '&:active': {
+                  backgroundColor: '#431407', // active:bg-amber-950
+                },
+                letterSpacing: '0.025em', // tracking-wide
+                px: 3, // px-6 (1 unit = 8px, so 6 * 8 = 48px / 16px = 3)
+                py: 1.5, // py-2 (2 * 8 = 16px / 16px = 1)
               }}
               onClick={mintNFT}
               disabled={isMinting}
