@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Typography, Button, Grid, CircularProgress, Card, CardContent, Container } from '@mui/material';
+import { Box, Typography, Button, Grid, CircularProgress, Card, CardContent, Container, Modal } from '@mui/material';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ethers } from 'ethers';
 import { Interface } from '@ethersproject/abi';
@@ -15,6 +15,8 @@ const Dashboard = ({ userAddress, provider, logoImage, contractAddress, contract
   const [isMinting, setIsMinting] = useState(false);
   const [showNewCard, setShowNewCard] = useState(false);
   const [newCard, setNewCard] = useState(null);
+  const [isCardRotating, setIsCardRotating] = useState(false); // State for card rotation
+  const [isModalOpen, setIsModalOpen] = useState(false); // State for modal
 
   const Rarity = ["Common", "Rare", "Epic", "Legendary"];
 
@@ -122,14 +124,22 @@ const Dashboard = ({ userAddress, provider, logoImage, contractAddress, contract
         const parsed = contract.interface.parseLog(event);
         console.log('NFTMinted event:', parsed);
 
-        setNewCard({
+        const newCardData = {
           tokenId: Number(parsed.args[1]),
           rarity: Number(parsed.args[2]),
           name: parsed.args[3],
           attackDamage: Number(parsed.args[4]),
-        });
+        };
 
-        setShowNewCard(true);
+        setNewCard(newCardData);
+        setIsModalOpen(true); // Open the modal
+        setIsCardRotating(true); // Start the rotation effect
+
+        // Stop rotation after 2 seconds
+        setTimeout(() => {
+          setIsCardRotating(false);
+        }, 2000);
+
         await loadNFTs(contract);
       }
     } catch (error) {
@@ -223,46 +233,6 @@ const Dashboard = ({ userAddress, provider, logoImage, contractAddress, contract
               )}
             </Button>
 
-            <AnimatePresence>
-              {showNewCard && newCard && (
-                <motion.div
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  exit={{ scale: 0 }}
-                  style={{ marginBottom: '2rem' }}
-                >
-                  <Card
-                    sx={{
-                      width: 300,
-                      margin: 'auto',
-                      background: getRarityStyles(newCard.rarity).bgGradient,
-                      border: `3px solid ${getRarityStyles(newCard.rarity).borderColor}`,
-                      color: getRarityStyles(newCard.rarity).textColor,
-                      overflow: 'hidden',
-                    }}
-                  >
-                    <CardContent>
-                      {getCardImage(newCard.name) && (
-                        <img
-                          src={getCardImage(newCard.name)}
-                          alt={newCard.name}
-                          style={{
-                            width: '100%',
-                            height: 'auto',
-                            marginBottom: '1rem',
-                          }}
-                        />
-                      )}
-                      <Typography variant="h5">{newCard.name}</Typography>
-                      <Typography>Rarity: {Rarity[newCard.rarity]}</Typography>
-                      <Typography>Attack: {(newCard.attackDamage / 100).toFixed(2)}</Typography>
-                      <Typography>Token ID: {newCard.tokenId}</Typography>
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              )}
-            </AnimatePresence>
-
             <Grid container spacing={3} justifyContent="center">
               {nfts.map((nft, index) => {
                 const styles = getRarityStyles(nft.rarity);
@@ -302,6 +272,74 @@ const Dashboard = ({ userAddress, provider, logoImage, contractAddress, contract
           </Box>
         </Box>
       </Container>
+
+      {/* Modal for New Card */}
+      <Modal
+        open={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+      >
+        <Box
+          sx={{
+            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+            padding: '2rem',
+            borderRadius: '8px',
+            textAlign: 'center',
+          }}
+        >
+          <motion.div
+            animate={{
+              rotateY: isCardRotating ? 360 : 0,
+              transition: { duration: 2, ease: 'linear' },
+            }}
+          >
+            <Card
+              sx={{
+                width: 300,
+                background: getRarityStyles(newCard?.rarity).bgGradient,
+                border: `3px solid ${getRarityStyles(newCard?.rarity).borderColor}`,
+                color: getRarityStyles(newCard?.rarity).textColor,
+                overflow: 'hidden',
+              }}
+            >
+              <CardContent>
+                {newCard && getCardImage(newCard.name) && (
+                  <img
+                    src={getCardImage(newCard.name)}
+                    alt={newCard.name}
+                    style={{
+                      width: '100%',
+                      height: 'auto',
+                      marginBottom: '1rem',
+                    }}
+                  />
+                )}
+                {!isCardRotating && newCard && (
+                  <>
+                    <Typography variant="h5">{newCard.name}</Typography>
+                    <Typography>Rarity: {Rarity[newCard.rarity]}</Typography>
+                    <Typography>Attack: {(newCard.attackDamage / 100).toFixed(2)}</Typography>
+                    <Typography>Token ID: {newCard.tokenId}</Typography>
+                  </>
+                )}
+              </CardContent>
+            </Card>
+          </motion.div>
+          {!isCardRotating && (
+            <Button
+              variant="contained"
+              sx={{ mt: 2 }}
+              onClick={() => setIsModalOpen(false)}
+            >
+              Close
+            </Button>
+          )}
+        </Box>
+      </Modal>
     </>
   );
 };
