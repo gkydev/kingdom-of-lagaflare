@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Typography, Button, Grid, CircularProgress, Card, CardContent, Container, Modal } from '@mui/material';
+import { Box, Typography, Button, Grid, CircularProgress, Card, CardContent, Container, Modal, Snackbar, Alert } from '@mui/material';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ethers } from 'ethers';
 import { Interface } from '@ethersproject/abi';
@@ -8,7 +8,7 @@ import Frostguard from './assets/Cards/Frostguard.png';
 import Shadowstrike from './assets/Cards/Shadowstrike.png';
 import Soulreaver from './assets/Cards/Soulreaver.png';
 import Thunderclaw from './assets/Cards/Thunderclaw.png';
-import Confetti from 'react-confetti'; // Import Confetti
+import Confetti from 'react-confetti';
 
 const Dashboard = ({ userAddress, provider, logoImage, contractAddress, contractABI }) => {
   const [contract, setContract] = useState(null);
@@ -18,7 +18,9 @@ const Dashboard = ({ userAddress, provider, logoImage, contractAddress, contract
   const [newCard, setNewCard] = useState(null);
   const [isCardRotating, setIsCardRotating] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [showConfetti, setShowConfetti] = useState(false); // State for confetti
+  const [showConfetti, setShowConfetti] = useState(false);
+  const [selectedCard, setSelectedCard] = useState(null); // Track selected card
+  const [error, setError] = useState(null); // For error messages
 
   const Rarity = ["Common", "Rare", "Epic", "Legendary"];
 
@@ -94,25 +96,22 @@ const Dashboard = ({ userAddress, provider, logoImage, contractAddress, contract
       const mintPrice = await contract.mintPrice();
       console.log('Mint price (wei):', mintPrice.toString());
 
-      // Send transaction
       const tx = await contract.mintNFT({
         value: mintPrice,
         gasLimit: 500000,
       });
       console.log('Transaction hash:', tx.hash);
 
-      // Simple polling for transaction receipt
       let receipt = null;
       while (!receipt) {
         receipt = await provider.getTransactionReceipt(tx.hash);
         if (!receipt) {
-          await new Promise((resolve) => setTimeout(resolve, 1000)); // Wait 1 second before retry
+          await new Promise((resolve) => setTimeout(resolve, 1000));
         }
       }
 
       console.log('Transaction receipt:', receipt);
 
-      // Find the event from transaction logs
       const event = receipt.logs.find((log) => {
         try {
           const parsed = contract.interface.parseLog(log);
@@ -134,13 +133,12 @@ const Dashboard = ({ userAddress, provider, logoImage, contractAddress, contract
         };
 
         setNewCard(newCardData);
-        setIsModalOpen(true); // Open the modal
-        setIsCardRotating(true); // Start the rotation effect
+        setIsModalOpen(true);
+        setIsCardRotating(true);
 
-        // Stop rotation after 2 seconds and show confetti
         setTimeout(() => {
           setIsCardRotating(false);
-          setShowConfetti(true); // Trigger confetti
+          setShowConfetti(true);
         }, 2000);
 
         await loadNFTs(contract);
@@ -174,6 +172,23 @@ const Dashboard = ({ userAddress, provider, logoImage, contractAddress, contract
     }
   };
 
+  const handleCardSelect = (card) => {
+    setSelectedCard(card.tokenId === selectedCard ? null : card.tokenId); // Toggle selection
+  };
+
+  const handleFight = () => {
+    if (!selectedCard) {
+      setError('Please select a card before fighting!');
+      return;
+    }
+    // Add your fight logic here
+    console.log('Selected card for fight:', selectedCard);
+  };
+
+  const handleCloseError = () => {
+    setError(null);
+  };
+
   return (
     <>
       <Box
@@ -184,7 +199,7 @@ const Dashboard = ({ userAddress, provider, logoImage, contractAddress, contract
           justifyContent: 'space-between',
           alignItems: 'center',
           backgroundColor: 'rgba(0,0,0,0.5)',
-          position: 'relative', // Add this
+          position: 'relative',
         }}
       >
         <Box
@@ -192,12 +207,12 @@ const Dashboard = ({ userAddress, provider, logoImage, contractAddress, contract
             position: 'absolute',
             left: '50%',
             transform: 'translateX(-50%)',
-            zIndex: 1, // Add this
+            zIndex: 1,
           }}
         >
           <img src={logoImage} alt="Logo" style={{ height: '180px', paddingTop: '50px' }} />
         </Box>
-        <Box sx={{ flex: 1 }} /> {/* Left spacer */}
+        <Box sx={{ flex: 1 }} />
         <Typography
           variant="body1"
           sx={{
@@ -206,9 +221,9 @@ const Dashboard = ({ userAddress, provider, logoImage, contractAddress, contract
             backgroundColor: 'rgba(0,0,0,0.5)',
             padding: '0.5rem 1rem',
             borderRadius: '4px',
-            zIndex: 2, // Add this
-            position: 'relative', // Add this
-            right: '20px', // Add some padding from the right
+            zIndex: 2,
+            position: 'relative',
+            right: '20px',
           }}
         >
           {formatAddress(userAddress)}
@@ -223,25 +238,25 @@ const Dashboard = ({ userAddress, provider, logoImage, contractAddress, contract
               sx={{
                 mt: 4,
                 mb: 2,
-                backgroundColor: '#7c2d12', // bg-amber-900
-                color: '#fef3c7', // text-amber-100
-                fontFamily: 'serif', // font-serif
-                fontWeight: 'bold', // font-bold
-                fontSize: '1.125rem', // text-lg
-                border: '2px solid #b45309', // border-2 border-amber-700
-                borderRadius: '0.375rem', // rounded
-                boxShadow: 'inset 0 2px 4px 0 rgba(146, 64, 14, 0.5)', // shadow-inner shadow-amber-800/50
-                transition: 'all 0.3s', // transition-all duration-300
+                backgroundColor: '#7c2d12',
+                color: '#fef3c7',
+                fontFamily: 'serif',
+                fontWeight: 'bold',
+                fontSize: '1.125rem',
+                border: '2px solid #b45309',
+                borderRadius: '0.375rem',
+                boxShadow: 'inset 0 2px 4px 0 rgba(146, 64, 14, 0.5)',
+                transition: 'all 0.3s',
                 '&:hover': {
-                  backgroundColor: '#92400e', // hover:bg-amber-800
-                  color: '#fef9c3', // hover:text-amber-50
+                  backgroundColor: '#92400e',
+                  color: '#fef9c3',
                 },
                 '&:active': {
-                  backgroundColor: '#431407', // active:bg-amber-950
+                  backgroundColor: '#431407',
                 },
-                letterSpacing: '0.025em', // tracking-wide
-                px: 3, // px-6 (1 unit = 8px, so 6 * 8 = 48px / 16px = 3)
-                py: 1.5, // py-2 (2 * 8 = 16px / 16px = 1)
+                letterSpacing: '0.025em',
+                px: 3,
+                py: 1.5,
               }}
               onClick={mintNFT}
               disabled={isMinting}
@@ -261,32 +276,29 @@ const Dashboard = ({ userAddress, provider, logoImage, contractAddress, contract
                 mt: 4,
                 mb: 2,
                 ml: 2,
-                backgroundColor: '#7c2d12', // bg-amber-900
-                color: '#fef3c7', // text-amber-100
-                fontFamily: 'serif', // font-serif
-                fontWeight: 'bold', // font-bold
-                fontSize: '1.125rem', // text-lg
-                border: '2px solid #b45309', // border-2 border-amber-700
-                borderRadius: '0.375rem', // rounded
-                boxShadow: 'inset 0 2px 4px 0 rgba(146, 64, 14, 0.5)', // shadow-inner shadow-amber-800/50
-                transition: 'all 0.3s', // transition-all duration-300
+                backgroundColor: '#7c2d12',
+                color: '#fef3c7',
+                fontFamily: 'serif',
+                fontWeight: 'bold',
+                fontSize: '1.125rem',
+                border: '2px solid #b45309',
+                borderRadius: '0.375rem',
+                boxShadow: 'inset 0 2px 4px 0 rgba(146, 64, 14, 0.5)',
+                transition: 'all 0.3s',
                 '&:hover': {
-                  backgroundColor: '#92400e', // hover:bg-amber-800
-                  color: '#fef9c3', // hover:text-amber-50
+                  backgroundColor: '#92400e',
+                  color: '#fef9c3',
                 },
                 '&:active': {
-                  backgroundColor: '#431407', // active:bg-amber-950
+                  backgroundColor: '#431407',
                 },
-                letterSpacing: '0.025em', // tracking-wide
-                px: 3, // px-6 (1 unit = 8px, so 6 * 8 = 48px / 16px = 3)
-                py: 1.5, // py-2 (2 * 8 = 16px / 16px = 1)
+                letterSpacing: '0.025em',
+                px: 3,
+                py: 1.5,
               }}
-              //onClick={mintNFT}
-              //disabled={isMinting}
+              onClick={handleFight}
             >
-              
-                FIGHT !
-              
+              FIGHT !
             </Button>
 
             <Grid container spacing={3} justifyContent="center">
@@ -297,11 +309,14 @@ const Dashboard = ({ userAddress, provider, logoImage, contractAddress, contract
                     <Card
                       sx={{
                         background: styles.bgGradient,
-                        border: `3px solid ${styles.borderColor}`,
+                        border: `3px solid ${nft.tokenId === selectedCard ? '#ffd700' : styles.borderColor}`, // Highlight selected card
                         color: styles.textColor,
                         overflow: 'hidden',
                         maxWidth: 300,
+                        cursor: 'pointer',
+                        transition: 'border-color 0.3s',
                       }}
+                      onClick={() => handleCardSelect(nft)}
                     >
                       <CardContent>
                         {getCardImage(nft.name) && (
@@ -334,7 +349,7 @@ const Dashboard = ({ userAddress, provider, logoImage, contractAddress, contract
         open={isModalOpen}
         onClose={() => {
           setIsModalOpen(false);
-          setShowConfetti(false); // Stop confetti when modal is closed
+          setShowConfetti(false);
         }}
         sx={{
           display: 'flex',
@@ -350,21 +365,20 @@ const Dashboard = ({ userAddress, provider, logoImage, contractAddress, contract
             textAlign: 'center',
           }}
         >
-          {/* Confetti Effect */}
           {showConfetti && (
             <Confetti
               width={window.innerWidth}
               height={window.innerHeight}
-              recycle={false} // Stop confetti after one cycle
-              numberOfPieces={500} // Increase confetti density
-              gravity={0.2} // Adjust falling speed
+              recycle={false}
+              numberOfPieces={500}
+              gravity={0.2}
             />
           )}
 
           <motion.div
             animate={{
               rotateY: isCardRotating ? 360 : 0,
-              transition: { duration: 2, ease: 'linear' }, // Faster rotation
+              transition: { duration: 2, ease: 'linear' },
             }}
           >
             <Card
@@ -401,36 +415,48 @@ const Dashboard = ({ userAddress, provider, logoImage, contractAddress, contract
           </motion.div>
           {!isCardRotating && (
             <Button
-            variant="contained"
-            sx={{
-              mt: 2,
-              backgroundColor: '#7c2d12', // bg-amber-900
-              color: '#fef3c7', // text-amber-100
-              fontFamily: 'serif', // font-serif
-              fontWeight: 'bold', // font-bold
-              fontSize: '1.125rem', // text-lg
-              border: '2px solid #b45309', // border-2 border-amber-700
-              borderRadius: '0.375rem', // rounded
-              boxShadow: 'inset 0 2px 4px 0 rgba(146, 64, 14, 0.5)', // shadow-inner shadow-amber-800/50
-              transition: 'all 0.3s', // transition-all duration-300
-              '&:hover': {
-                backgroundColor: '#92400e', // hover:bg-amber-800
-                color: '#fef9c3', // hover:text-amber-50
-              },
-              '&:active': {
-                backgroundColor: '#431407', // active:bg-amber-950
-              },
-              letterSpacing: '0.025em', // tracking-wide
-              px: 3, // px-6 (1 unit = 8px, so 6 * 8 = 48px / 16px = 3)
-              py: 1.5, // py-2 (2 * 8 = 16px / 16px = 1)
-            }}
-            onClick={() => setIsModalOpen(false)}
-          >
-            ADD TO MY DECK !
-          </Button>
+              variant="contained"
+              sx={{
+                mt: 2,
+                backgroundColor: '#7c2d12',
+                color: '#fef3c7',
+                fontFamily: 'serif',
+                fontWeight: 'bold',
+                fontSize: '1.125rem',
+                border: '2px solid #b45309',
+                borderRadius: '0.375rem',
+                boxShadow: 'inset 0 2px 4px 0 rgba(146, 64, 14, 0.5)',
+                transition: 'all 0.3s',
+                '&:hover': {
+                  backgroundColor: '#92400e',
+                  color: '#fef9c3',
+                },
+                '&:active': {
+                  backgroundColor: '#431407',
+                },
+                letterSpacing: '0.025em',
+                px: 3,
+                py: 1.5,
+              }}
+              onClick={() => setIsModalOpen(false)}
+            >
+              ADD TO MY DECK !
+            </Button>
           )}
         </Box>
       </Modal>
+
+      {/* Error Snackbar */}
+      <Snackbar
+        open={!!error}
+        autoHideDuration={3000}
+        onClose={handleCloseError}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+      >
+        <Alert onClose={handleCloseError} severity="error" sx={{ width: '100%' }}>
+          {error}
+        </Alert>
+      </Snackbar>
     </>
   );
 };
