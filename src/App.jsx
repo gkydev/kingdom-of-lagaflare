@@ -63,9 +63,10 @@ const NFTCardGame = () => {
       height: "100vh" 
     }}>
       <img src={logoImage} alt="Logo" style={{ marginBottom: "20px", width: "400px" }} />
-      <Typography variant="h6" gutterBottom>
-        Connect your wallet to embark on your adventure
-      </Typography>
+      <Typography variant="h6" gutterBottom style={{ color: "#d97706" }}>
+      Connect your wallet to embark on your adventure
+    </Typography>
+
       <Button 
         variant="contained" 
         onClick={handleConnectWallet}
