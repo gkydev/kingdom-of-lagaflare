@@ -31,7 +31,7 @@ Kingdom of LagaFlare is a blockchain-based NFT card game where players can colle
 2. **Get Your First Card**
    - Click "Open Pack" to mint your first NFT card
    - Each card has random rarity and attack power
-   - Mint price: 0.01 ETH
+   - Mint price: 0.01 Flare
 
 3. **Battle System**
    - Select a card from your collection
@@ -85,7 +85,7 @@ C2FLARE Testnet: `0xd15927078676431351AE2f89e4639cD134B08104`
 1. Collect multiple cards to increase your chances of winning
 2. Higher rarity cards have better base attack power
 3. Keep track of your Fight ID when creating battles
-4. Make sure you have enough Sepolia ETH for minting and gas fees
+4. Make sure you have enough C2 FLARE for minting and gas fees
 
 ## Support
 
