@@ -124,7 +124,7 @@ const NFTCardGame = () => {
               userAddress={userAddress} 
               provider={provider}
               logoImage={logoImage} 
-              contractAddress={"0x6Dd60539316747995a76DCa3def165E3d43408Dd"}
+              contractAddress={"0xd15927078676431351AE2f89e4639cD134B08104"}
               contractABI={nftContractABI}
             />
           } />

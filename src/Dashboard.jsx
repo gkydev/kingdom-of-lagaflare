@@ -24,6 +24,11 @@ const Dashboard = ({ userAddress, provider, logoImage, contractAddress, contract
   const [isFightModalOpen, setIsFightModalOpen] = useState(false);
   const [fightMode, setFightMode] = useState(null); // 'create' or 'join'
   const [fightId, setFightId] = useState('');
+  const [createdFightId, setCreatedFightId] = useState(null);
+  const [fightAction, setFightAction] = useState(null); // 'create' or 'join'
+  const [isWinnerModalOpen, setIsWinnerModalOpen] = useState(false);
+  const [showWinnerConfetti, setShowWinnerConfetti] = useState(false);
+  const [isLoserModalOpen, setIsLoserModalOpen] = useState(false);
 
   const Rarity = ["Common", "Rare", "Epic", "Legendary"];
 
@@ -185,14 +190,131 @@ const Dashboard = ({ userAddress, provider, logoImage, contractAddress, contract
       return;
     }
     setIsFightModalOpen(true);
+    setFightAction(null); // Reset fight action when opening modal
   };
 
-  const handleCreateFight = () => {
-    setFightMode('create');
+  const handleCreateFight = async () => {
+    try {
+      if (!selectedCard) {
+        setError('Please select a card before creating a fight!');
+        return;
+      }
+
+      const tx = await contract.startFight(selectedCard);
+      console.log("Creating fight with card:", selectedCard);
+      
+      // Remove the fight action immediately when transaction is sent
+      setFightAction(null);
+      
+      let receipt = null;
+      while (!receipt) {
+        receipt = await provider.getTransactionReceipt(tx.hash);
+        if (!receipt) {
+          await new Promise(resolve => setTimeout(resolve, 1000));
+        }
+      }
+      
+      console.log("Fight creation receipt:", receipt);
+
+      const log = receipt.logs.find(log => {
+        try {
+          const parsed = contract.interface.parseLog(log);
+          return parsed.name === 'FightStarted';
+        } catch {
+          return false;
+        }
+      });
+
+      if (log) {
+        const parsedLog = contract.interface.parseLog(log);
+        console.log("Parsed event:", parsedLog);
+        
+        const fightId = Number(parsedLog.args[0]);
+        console.log("Fight created with ID:", fightId);
+        setCreatedFightId(fightId);
+        await navigator.clipboard.writeText(fightId.toString());
+        setError('Fight ID has been copied to clipboard!');
+      }
+
+    } catch (error) {
+      console.error('Error creating fight:', error);
+      setError('Failed to create fight. Please try again.');
+    }
   };
 
-  const handleJoinFight = () => {
-    setFightMode('join');
+  const handleJoinFight = async () => {
+    try {
+      if (!fightId) {
+        setError('Please enter a fight ID!');
+        return;
+      }
+      const tx = await contract.joinFight(fightId, selectedCard);
+      console.log("Joining fight:", fightId, "with card:", selectedCard);
+      
+      let receipt = null;
+      while (!receipt) {
+        receipt = await provider.getTransactionReceipt(tx.hash);
+        if (!receipt) {
+          await new Promise(resolve => setTimeout(resolve, 1000));
+        }
+      }
+
+      // After joining, resolve the fight
+      await resolveFight(fightId);
+      
+      setIsFightModalOpen(false);
+      setFightAction(null);
+      setFightId('');
+      
+    } catch (error) {
+      console.error('Error joining fight:', error);
+      setError('Failed to join fight. Please try again.');
+    }
+  };
+
+  const resolveFight = async (fightId) => {
+    try {
+      const tx = await contract.resolveFight(fightId);
+      let receipt = null;
+      while (!receipt) {
+        receipt = await provider.getTransactionReceipt(tx.hash);
+        if (!receipt) {
+          await new Promise(resolve => setTimeout(resolve, 1000));
+        }
+      }
+
+      const log = receipt.logs.find(log => {
+        try {
+          return contract.interface.parseLog(log).name === 'FightResolved';
+        } catch {
+          return false;
+        }
+      });
+
+      if (log) {
+        const parsedLog = contract.interface.parseLog(log);
+        const winner = parsedLog.args[1];
+        console.log("Fight winner:", winner);
+
+        // Wait for blockchain to finalize
+        await new Promise(resolve => setTimeout(resolve, 2000));
+
+        // Refresh NFTs first
+        await loadNFTs(contract);
+
+        // Then show appropriate modal
+        if (winner.toLowerCase() === userAddress.toLowerCase()) {
+          setShowWinnerConfetti(true);
+          setIsWinnerModalOpen(true);
+        } else {
+          setIsLoserModalOpen(true);
+        }
+      }
+
+    } catch (error) {
+      console.error('Error resolving fight:', error);
+      setError('Failed to resolve fight. Please try again.');
+    }
   };
 
   const handleFightSubmit = () => {
@@ -210,6 +332,24 @@ const Dashboard = ({ userAddress, provider, logoImage, contractAddress, contract
 
   const handleCloseError = () => {
     setError(null);
+  };
+
+  // Add this function to handle copying fight ID
+  const copyFightId = async () => {
+    try {
+      await navigator.clipboard.writeText(createdFightId.toString());
+      setError('Fight ID copied to clipboard!');
+    } catch (err) {
+      console.error('Failed to copy:', err);
+    }
+  };
+
+  // Add a function to handle modal closing and NFT refresh
+  const handleModalClose = async () => {
+    setIsWinnerModalOpen(false);
+    setIsLoserModalOpen(false);
+    setShowWinnerConfetti(false);
+    await loadNFTs(contract); // Refresh NFTs one more time
   };
 
   return (
@@ -474,8 +614,8 @@ const Dashboard = ({ userAddress, provider, logoImage, contractAddress, contract
         open={isFightModalOpen}
         onClose={() => {
           setIsFightModalOpen(false);
-          setFightMode(null);
-          setFightId('');
+          setCreatedFightId(null);
+          setFightAction(null);
         }}
         sx={{
           display: 'flex',
@@ -494,15 +634,14 @@ const Dashboard = ({ userAddress, provider, logoImage, contractAddress, contract
             width: '90%',
           }}
         >
-          {!fightMode ? (
-            // Initial fight mode selection
+          {!fightAction && !createdFightId ? (
             <>
               <Typography variant="h5" sx={{ color: '#fef3c7', mb: 3 }}>
                 Choose Your Battle Path
               </Typography>
               <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center' }}>
                 <Button
-                  onClick={handleCreateFight}
+                  onClick={() => setFightAction('create')}
                   sx={{
                     backgroundColor: '#7c2d12',
                     color: '#fef3c7',
@@ -513,7 +652,7 @@ const Dashboard = ({ userAddress, provider, logoImage, contractAddress, contract
                   Create Fight
                 </Button>
                 <Button
-                  onClick={handleJoinFight}
+                  onClick={() => setFightAction('join')}
                   sx={{
                     backgroundColor: '#7c2d12',
                     color: '#fef3c7',
@@ -525,17 +664,16 @@ const Dashboard = ({ userAddress, provider, logoImage, contractAddress, contract
                 </Button>
               </Box>
             </>
-          ) : (
-            // Fight ID input form
+          ) : fightAction === 'join' ? (
             <>
               <Typography variant="h5" sx={{ color: '#fef3c7', mb: 3 }}>
-                {fightMode === 'create' ? 'Create New Fight' : 'Join Existing Fight'}
+                Join Existing Fight
               </Typography>
               <input
-                type="text"
+                type="number"
                 value={fightId}
                 onChange={(e) => setFightId(e.target.value)}
-                placeholder={fightMode === 'create' ? 'Enter fight ID to create' : 'Enter fight ID to join'}
+                placeholder="Enter fight ID to join"
                 style={{
                   width: '100%',
                   padding: '10px',
@@ -548,7 +686,7 @@ const Dashboard = ({ userAddress, provider, logoImage, contractAddress, contract
               />
               <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center' }}>
                 <Button
-                  onClick={handleFightSubmit}
+                  onClick={handleJoinFight}
                   sx={{
                     backgroundColor: '#7c2d12',
                     color: '#fef3c7',
@@ -556,10 +694,10 @@ const Dashboard = ({ userAddress, provider, logoImage, contractAddress, contract
                     '&:hover': { backgroundColor: '#92400e' },
                   }}
                 >
-                  {fightMode === 'create' ? 'Create' : 'Join'}
+                  Join
                 </Button>
                 <Button
-                  onClick={() => setFightMode(null)}
+                  onClick={() => setFightAction(null)}
                   sx={{
                     backgroundColor: '#1f2937',
                     color: '#fef3c7',
@@ -571,7 +709,173 @@ const Dashboard = ({ userAddress, provider, logoImage, contractAddress, contract
                 </Button>
               </Box>
             </>
+          ) : fightAction === 'create' ? (
+            <>
+              <Typography variant="h5" sx={{ color: '#fef3c7', mb: 3 }}>
+                Create New Fight
+              </Typography>
+              <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center' }}>
+                <Button
+                  onClick={handleCreateFight}
+                  sx={{
+                    backgroundColor: '#7c2d12',
+                    color: '#fef3c7',
+                    border: '2px solid #b45309',
+                    '&:hover': { backgroundColor: '#92400e' },
+                  }}
+                >
+                  Create
+                </Button>
+                <Button
+                  onClick={() => setFightAction(null)}
+                  sx={{
+                    backgroundColor: '#1f2937',
+                    color: '#fef3c7',
+                    border: '2px solid #b45309',
+                    '&:hover': { backgroundColor: '#374151' },
+                  }}
+                >
+                  Back
+                </Button>
+              </Box>
+            </>
+          ) : (
+            /* Show fight created success message */
+            <>
+              <Typography variant="h5" sx={{ color: '#ffd700', mb: 3 }}>
+                Fight Created Successfully!
+              </Typography>
+              <Box
+                sx={{
+                  backgroundColor: '#1f2937',
+                  padding: '1rem',
+                  borderRadius: '4px',
+                  border: '2px solid #ffd700',
+                  mb: 3,
+                  cursor: 'pointer',
+                  '&:hover': {
+                    backgroundColor: '#374151',
+                  },
+                }}
+                onClick={copyFightId}
+              >
+                <Typography sx={{ color: '#fef3c7', fontSize: '32px', fontWeight: 'bold' }}>
+                  Fight ID: {createdFightId}
+                </Typography>
+                <Typography sx={{ color: '#9ca3af', fontSize: '14px', mt: 1 }}>
+                  Click to copy
+                </Typography>
+              </Box>
+              <Typography sx={{ color: '#fef3c7', mb: 3 }}>
+                Share this Fight ID with your opponent to join the fight!
+              </Typography>
+              <Button
+                onClick={() => {
+                  setIsFightModalOpen(false);
+                  setCreatedFightId(null);
+                }}
+                sx={{
+                  backgroundColor: '#7c2d12',
+                  color: '#fef3c7',
+                  border: '2px solid #b45309',
+                  '&:hover': { backgroundColor: '#92400e' },
+                }}
+              >
+                Close
+              </Button>
+            </>
           )}
+        </Box>
+      </Modal>
+
+      {/* Winner Modal */}
+      <Modal
+        open={isWinnerModalOpen}
+        onClose={handleModalClose}
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+      >
+        <Box
+          sx={{
+            backgroundColor: 'rgba(0, 0, 0, 0.9)',
+            padding: '2rem',
+            borderRadius: '8px',
+            textAlign: 'center',
+            border: '2px solid #ffd700',
+            maxWidth: '400px',
+            width: '90%',
+          }}
+        >
+          {showWinnerConfetti && (
+            <Confetti
+              width={window.innerWidth}
+              height={window.innerHeight}
+              recycle={false}
+              numberOfPieces={500}
+              gravity={0.2}
+            />
+          )}
+          <Typography variant="h4" sx={{ color: '#ffd700', mb: 3 }}>
+            🎉 Congratulations! 🎉
+          </Typography>
+          <Typography sx={{ color: '#fef3c7', mb: 3 }}>
+            You won the battle! The opponent's card has been added to your collection.
+          </Typography>
+          <Button
+            onClick={handleModalClose}
+            sx={{
+              backgroundColor: '#7c2d12',
+              color: '#fef3c7',
+              border: '2px solid #ffd700',
+              '&:hover': { backgroundColor: '#92400e' },
+            }}
+          >
+            Claim Victory!
+          </Button>
+        </Box>
+      </Modal>
+
+      {/* Add Loser Modal */}
+      <Modal
+        open={isLoserModalOpen}
+        onClose={handleModalClose}
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+      >
+        <Box
+          sx={{
+            backgroundColor: 'rgba(0, 0, 0, 0.9)',
+            padding: '2rem',
+            borderRadius: '8px',
+            textAlign: 'center',
+            border: '2px solid #991b1b',
+            maxWidth: '400px',
+            width: '90%',
+          }}
+        >
+          <Typography variant="h4" sx={{ color: '#991b1b', mb: 3 }}>
+            💔 Defeat! 💔
+          </Typography>
+          <Typography sx={{ color: '#fef3c7', mb: 3 }}>
+            You lost the battle! Your card has been claimed by the victor.
+          </Typography>
+          <Button
+            onClick={handleModalClose}
+            sx={{
+              backgroundColor: '#7c2d12',
+              color: '#fef3c7',
+              border: '2px solid #991b1b',
+              '&:hover': { backgroundColor: '#92400e' },
+            }}
+          >
+            Accept Defeat
+          </Button>
         </Box>
       </Modal>
 
