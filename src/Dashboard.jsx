@@ -194,7 +194,7 @@ const Dashboard = ({ userAddress, provider, logoImage, contractAddress, contract
             transform: 'translateX(-50%)',
           }}
         >
-          <img src={logoImage} alt="Logo" style={{ height: '120px', paddingTop: '50px' }} />
+          <img src={logoImage} alt="Logo" style={{ height: '140px', paddingTop: '50px' }} />
         </Box>
         <Typography
           variant="body1"
@@ -219,7 +219,7 @@ const Dashboard = ({ userAddress, provider, logoImage, contractAddress, contract
                 backgroundColor: '#000',
                 borderRadius: 0,
                 mb: 4,
-                mt: 2,
+                mt: 3,
                 width: '200px',
                 height: '50px',
               }}
