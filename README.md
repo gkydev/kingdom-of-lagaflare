@@ -89,7 +89,9 @@ C2FLARE Testnet: `0xd15927078676431351AE2f89e4639cD134B08104`
 
 ## Experience with Flare
 
-Had several problems with Flare network even come through a bug in the contracts, it fixed by the team in seconds. It was fun experience.
+Building the game was a fantastic experience, despite facing some challenges with the Flare network—including a bug in the official contracts. Thankfully, the Flare team was incredibly responsive, resolving the issue within seconds. Their support was outstanding, and working with them was a pleasure. If it had been the Ethereum team, I probably would have waited a month!
+
+The official documentation proved invaluable, providing everything I needed. Flare’s RNG is an exceptional feature—I only wish I had discovered it sooner, as it would have been perfect for my previous project. Though I found Flare a bit late, I’m glad I did. Overall, it was a fun and rewarding journey!
 
 ## License
 
