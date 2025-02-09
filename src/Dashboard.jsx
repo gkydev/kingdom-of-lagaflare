@@ -8,6 +8,7 @@ import Frostguard from './assets/Cards/Frostguard.png';
 import Shadowstrike from './assets/Cards/Shadowstrike.png';
 import Soulreaver from './assets/Cards/Soulreaver.png';
 import Thunderclaw from './assets/Cards/Thunderclaw.png';
+import Confetti from 'react-confetti'; // Import Confetti
 
 const Dashboard = ({ userAddress, provider, logoImage, contractAddress, contractABI }) => {
   const [contract, setContract] = useState(null);
@@ -15,8 +16,9 @@ const Dashboard = ({ userAddress, provider, logoImage, contractAddress, contract
   const [isMinting, setIsMinting] = useState(false);
   const [showNewCard, setShowNewCard] = useState(false);
   const [newCard, setNewCard] = useState(null);
-  const [isCardRotating, setIsCardRotating] = useState(false); // State for card rotation
-  const [isModalOpen, setIsModalOpen] = useState(false); // State for modal
+  const [isCardRotating, setIsCardRotating] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [showConfetti, setShowConfetti] = useState(false); // State for confetti
 
   const Rarity = ["Common", "Rare", "Epic", "Legendary"];
 
@@ -135,9 +137,10 @@ const Dashboard = ({ userAddress, provider, logoImage, contractAddress, contract
         setIsModalOpen(true); // Open the modal
         setIsCardRotating(true); // Start the rotation effect
 
-        // Stop rotation after 2 seconds
+        // Stop rotation after 2 seconds and show confetti
         setTimeout(() => {
           setIsCardRotating(false);
+          setShowConfetti(true); // Trigger confetti
         }, 2000);
 
         await loadNFTs(contract);
@@ -276,7 +279,10 @@ const Dashboard = ({ userAddress, provider, logoImage, contractAddress, contract
       {/* Modal for New Card */}
       <Modal
         open={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
+        onClose={() => {
+          setIsModalOpen(false);
+          setShowConfetti(false); // Stop confetti when modal is closed
+        }}
         sx={{
           display: 'flex',
           alignItems: 'center',
@@ -291,10 +297,21 @@ const Dashboard = ({ userAddress, provider, logoImage, contractAddress, contract
             textAlign: 'center',
           }}
         >
+          {/* Confetti Effect */}
+          {showConfetti && (
+            <Confetti
+              width={window.innerWidth}
+              height={window.innerHeight}
+              recycle={false} // Stop confetti after one cycle
+              numberOfPieces={500} // Increase confetti density
+              gravity={0.2} // Adjust falling speed
+            />
+          )}
+
           <motion.div
             animate={{
               rotateY: isCardRotating ? 360 : 0,
-              transition: { duration: 2, ease: 'linear' },
+              transition: { duration: 2, ease: 'linear' }, // Faster rotation
             }}
           >
             <Card
