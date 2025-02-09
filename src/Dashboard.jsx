@@ -229,7 +229,7 @@ const Dashboard = ({ userAddress, provider, logoImage, contractAddress, contract
               {isMinting ? (
                 <>
                   <CircularProgress size={24} sx={{ mr: 2 }} />
-                  Minting...
+                  OPENING NEW PACK...
                 </>
               ) : (
                 'Open New Pack'
