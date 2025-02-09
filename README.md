@@ -87,9 +87,9 @@ C2FLARE Testnet: `0xd15927078676431351AE2f89e4639cD134B08104`
 3. Keep track of your Fight ID when creating battles
 4. Make sure you have enough C2 FLARE for minting and gas fees
 
-## Support
+## Experience with Flare
 
-For issues and feature requests, please open an issue on GitHub.
+Had several problems with Flare network even come through a bug in the contracts, it fixed by the team in seconds. It was fun experience.
 
 ## License
 
