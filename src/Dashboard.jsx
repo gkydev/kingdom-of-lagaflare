@@ -154,7 +154,7 @@ const Dashboard = ({ userAddress, provider, logoImage, contractAddress, contract
   };
 
   const formatAddress = (address) => {
-    return `Knight ${address.substring(0, 6)}...${address.substring(address.length - 4)}`;
+    return `Welcome Adventurer ${address.substring(0, 10)}...${address.substring(address.length - 4)}`;
   };
 
   const getCardImage = (name) => {
@@ -184,26 +184,31 @@ const Dashboard = ({ userAddress, provider, logoImage, contractAddress, contract
           justifyContent: 'space-between',
           alignItems: 'center',
           backgroundColor: 'rgba(0,0,0,0.5)',
+          position: 'relative', // Add this
         }}
       >
-        <Box sx={{ flex: 1 }} /> {/* Spacer */}
         <Box
           sx={{
             position: 'absolute',
             left: '50%',
             transform: 'translateX(-50%)',
+            zIndex: 1, // Add this
           }}
         >
           <img src={logoImage} alt="Logo" style={{ height: '140px', paddingTop: '50px' }} />
         </Box>
+        <Box sx={{ flex: 1 }} /> {/* Left spacer */}
         <Typography
           variant="body1"
           sx={{
             color: '#fff',
-            flex: 1,
-            textAlign: 'right',
             fontFamily: 'monospace',
-            left: '100px',
+            backgroundColor: 'rgba(0,0,0,0.5)',
+            padding: '0.5rem 1rem',
+            borderRadius: '4px',
+            zIndex: 2, // Add this
+            position: 'relative', // Add this
+            right: '20px', // Add some padding from the right
           }}
         >
           {formatAddress(userAddress)}
