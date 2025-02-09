@@ -51,7 +51,7 @@ contract NFTCardGame is ERC721, Ownable {
     constructor(
         uint256 _initialMintPrice,
         address initialOwner // Optional parameter for initial owner
-    ) ERC721("CardGameNFT", "CGNFT") Ownable(initialOwner != address(0) ? initialOwner : msg.sender) {
+    ) ERC721("KingdomOFLagaFlare", "KOLFL") Ownable(initialOwner != address(0) ? initialOwner : msg.sender) {
         secureRandomConsumer = new SecureRandomConsumer(); // Initialize SecureRandomConsumer
         mintPrice = _initialMintPrice;
         _tokenIdCounter = 1;
@@ -140,7 +140,7 @@ contract NFTCardGame is ERC721, Ownable {
 
     // Overrides the base URI for metadata
     function _baseURI() internal pure override returns (string memory) {
-        return "https://your-metadata-server.com/api/token/ ";
+        return "https://base.uri ";
     }
 
     // Function to retrieve all token IDs owned by the caller (msg.sender)
