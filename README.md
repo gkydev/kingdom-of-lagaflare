@@ -26,7 +26,7 @@ Kingdom of LagaFlare is a blockchain-based NFT card game where players can colle
 
 1. **Connect Wallet**
    - Connect your MetaMask wallet to start playing
-   - Make sure you're on the Sepolia testnet
+   - Make sure you're on the Flare Coston2 Testnet
 
 2. **Get Your First Card**
    - Click "Open Pack" to mint your first NFT card
@@ -44,14 +44,6 @@ Kingdom of LagaFlare is a blockchain-based NFT card game where players can colle
    - Higher attack power means better chance of winning
    - Winner receives both cards
    - Loser's card is transferred to the winner
-
-## Card Types
-
-- **Dragonblade**: A powerful dragon-forged sword
-- **Shadowstrike**: Strikes from the shadows
-- **Frostguard**: Ice-enchanted defensive weapon
-- **Soulreaver**: Soul-stealing ancient blade
-- **Thunderclaw**: Lightning-imbued claw weapon
 
 ## Technical Setup
 
